@@ -6,3 +6,8 @@ pandas
 ta
 tensorboardx
 tensorflow
+black
+flake8
+isort
+jedi
+pre-commit
