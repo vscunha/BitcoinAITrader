@@ -1,0 +1,28 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: debug-statements
+    -   id: double-quote-string-fixer
+    -   id: name-tests-test
+    -   id: requirements-txt-fixer
+-   repo: https://github.com/PyCQA/isort    # Imports sorting
+    rev: 5.12.0
+    hooks:
+    -   id: isort
+        args: ["--profile", "black", "--filter-files"]
+        files: .
+-   repo: https://github.com/PyCQA/flake8
+    rev: 7.1.1
+    hooks:
+    -   id: flake8
+        additional_dependencies: [pep8-naming]
+        args: [--extend-ignore, E203, --max-line-length, "150"]
+-   repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 24.8.0
+    hooks:
+    -   id: black
+        args: [--skip-string-normalization]
