@@ -1,5 +1,5 @@
 import numpy as np
-from keras.src import backend
+import tensorflow as tf
 from keras.src.layers import LSTM, Conv1D, Dense, Flatten, Input, MaxPooling1D
 from keras.src.models import Model
 
@@ -63,37 +63,37 @@ class SharedModel:
         prob = actions * y_pred
         old_prob = actions * prediction_picks
 
-        prob = backend.clip(prob, 1e-10, 1.0)
-        old_prob = backend.clip(old_prob, 1e-10, 1.0)
+        prob = tf.clip_by_value(prob, 1e-10, 1.0)
+        old_prob = tf.clip_by_value(old_prob, 1e-10, 1.0)
 
-        ratio = backend.exp(backend.log(prob) - backend.log(old_prob))
+        ratio = tf.math.exp(tf.math.log(prob) - tf.math.log(old_prob))
 
         p1 = ratio * advantages
         p2 = (
-            backend.clip(
-                ratio, min_value=1 - loss_clipping, max_value=1 + loss_clipping
+            tf.clip_by_value(
+                ratio, 1 - loss_clipping, 1 + loss_clipping
             )
             * advantages
         )
 
-        actor_loss = -backend.mean(backend.minimum(p1, p2))
+        actor_loss = -tf.reduce_mean(tf.minimum(p1, p2))
 
-        entropy = -(y_pred * backend.log(y_pred + 1e-10))
-        entropy = entropy_loss * backend.mean(entropy)
+        entropy = -(y_pred * tf.math.log(y_pred + 1e-10))
+        entropy = entropy_loss * tf.reduce_mean(entropy)
 
         total_loss = actor_loss - entropy
 
         return total_loss
 
     def actor_predict(self, state):
-        return self.Actor.predict(state)
+        return self.Actor.predict(state, verbose=0)
 
     def critic_ppo2_loss(self, y_true, y_pred):
-        value_loss = backend.mean((y_true - y_pred) ** 2)  # standard PPO loss
+        value_loss = tf.reduce_mean((y_true - y_pred) ** 2)  # standard PPO loss
         return value_loss
 
     def critic_predict(self, state):
-        return self.Critic.predict([state, np.zeros((state.shape[0], 1))])
+        return self.Critic.predict(state, verbose=0)
 
 
 class ActorModel:
@@ -124,23 +124,23 @@ class ActorModel:
         prob = actions * y_pred
         old_prob = actions * prediction_picks
 
-        prob = backend.clip(prob, 1e-10, 1.0)
-        old_prob = backend.clip(old_prob, 1e-10, 1.0)
+        prob = tf.clip_by_value(prob, 1e-10, 1.0)
+        old_prob = tf.clip_by_value(old_prob, 1e-10, 1.0)
 
-        ratio = backend.exp(backend.log(prob) - backend.log(old_prob))
+        ratio = tf.math.exp(tf.math.log(prob) - tf.math.log(old_prob))
 
         p1 = ratio * advantages
         p2 = (
-            backend.clip(
-                ratio, min_value=1 - loss_clipping, max_value=1 + loss_clipping
+            tf.clip_by_value(
+                ratio, 1 - loss_clipping, 1 + loss_clipping
             )
             * advantages
         )
 
-        actor_loss = -backend.mean(backend.minimum(p1, p2))
+        actor_loss = -tf.reduce_mean(tf.minimum(p1, p2))
 
-        entropy = -(y_pred * backend.log(y_pred + 1e-10))
-        entropy = entropy_loss * backend.mean(entropy)
+        entropy = -(y_pred * tf.math.log(y_pred + 1e-10))
+        entropy = entropy_loss * tf.reduce_mean(entropy)
 
         total_loss = actor_loss - entropy
 
@@ -166,7 +166,7 @@ class CriticModel:
         )
 
     def critic_ppo2_loss(self, y_true, y_pred):
-        value_loss = backend.mean((y_true - y_pred) ** 2)  # standard PPO loss
+        value_loss = tf.mean((y_true - y_pred) ** 2)  # standard PPO loss
         return value_loss
 
     def critic_predict(self, state):

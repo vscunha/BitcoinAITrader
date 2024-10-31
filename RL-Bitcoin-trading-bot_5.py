@@ -178,8 +178,8 @@ class CustomAgent:
 
     def save(self, name='Crypto_trader', score='', args=[]):
         # save keras model weights
-        self.Actor.Actor.save_weights(f'{self.log_name}/{score}_{name}_Actor.h5')
-        self.Critic.Critic.save_weights(f'{self.log_name}/{score}_{name}_Critic.h5')
+        self.Actor.Actor.save_weights(f'{self.log_name}/{score}_{name}_Actor.weights.h5')
+        self.Critic.Critic.save_weights(f'{self.log_name}/{score}_{name}_Critic.weights.h5')
 
         # log saved model arguments to file
         if len(args) > 0:
@@ -192,8 +192,12 @@ class CustomAgent:
 
     def load(self, folder, name):
         # load keras model weights
-        self.Actor.Actor.load_weights(os.path.join(folder, f'{name}_Actor.h5'))
-        self.Critic.Critic.load_weights(os.path.join(folder, f'{name}_Critic.h5'))
+        if os.path.join(folder, f'{name}_Actor.h5'):
+            self.Actor.Actor.load_weights(os.path.join(folder, f'{name}_Actor.h5'))
+            self.Critic.Critic.load_weights(os.path.join(folder, f'{name}_Critic.h5'))
+        else:
+            self.Actor.Actor.load_weights(os.path.join(folder, f'{name}_Actor.weights.h5'))
+            self.Critic.Critic.load_weights(os.path.join(folder, f'{name}_Critic.weights.h5'))
 
 
 class CustomEnv:
@@ -561,8 +565,8 @@ def train_agent(
 
 
 def test_agent(
-    env:CustomEnv,
-    agent:CustomAgent,
+    env: CustomEnv,
+    agent: CustomAgent,
     visualize=True,
     test_episodes=10,
     folder='',
@@ -632,23 +636,34 @@ if __name__ == '__main__':
         batch_size=32,
         model='Dense',
     )
-    # train_env = CustomEnv(train_df, lookback_window_size=lookback_window_size)
-    # train_agent(train_env, agent, visualize=False, train_episodes=50000, training_batch_size=500)
-    test_env = CustomEnv(
-        test_df,
+    train_env = CustomEnv(
+        train_df,
         lookback_window_size=lookback_window_size,
         show_reward=True,
-        show_indicators=True,
+        show_indicators=True
     )
-    test_agent(
-        test_env,
+    train_agent(
+        train_env,
         agent,
-        visualize=True,
-        test_episodes=10,
-        folder='2021_01_18_22_18_Crypto_trader',
-        name='1933.71_Crypto_trader',
-        comment='',
-    )
+        visualize=False,
+        train_episodes=50000,
+        training_batch_size=500)
+
+    # test_env = CustomEnv(
+    #     test_df,
+    #     lookback_window_size=lookback_window_size,
+    #     show_reward=True,
+    #     show_indicators=True,
+    # )
+    # test_agent(
+    #     test_env,
+    #     agent,
+    #     visualize=False,
+    #     test_episodes=10,
+    #     folder='2021_01_18_22_18_Crypto_trader',
+    #     name='1933.71_Crypto_trader',
+    #     comment='',
+    # )
 
     '''
     #With CNN model ele nao tem este modelo treinado teria de executa-lo para o treinar e depois testar
